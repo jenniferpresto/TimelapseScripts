@@ -1,6 +1,6 @@
 ###Timelapse scripts
 
-Simplest--possibly the jenkiest--timelapse system ever created. Raspberry Pi is set up to take picture periodically. Once a day, the Mac downloads the prior day's pictures from the Raspberry Pi. The Python script goes through the images, removes the ones that are too dark (since the timelapse runs through the night, as well), and stitches the rest into a video.
+Simplest--possibly the jenkiest--timelapse system ever created. Raspberry Pi is set up to take pictures periodically. Once a day, the Mac downloads the prior day's pictures from the Raspberry Pi. The Python script, which is run manually, goes through the images, removes the ones that are too dark (since the timelapse also runs through the night), and stitches the rest into a video.
 
 More detailed readme to come.
 
