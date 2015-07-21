@@ -42,20 +42,21 @@ def main():
 
 		# Skip files that aren't jpgs
 		if not fn.endswith('.jpg'):
-			# print('Not an image file: ' + fn)
 			continue
 
 		imageFilePath = imageDir + fn
 
-		# Skip image files that are too dark
+		# Test brightness
 		level = testBrightness(imageFilePath)
+		# Print basic progress to console
 		sys.stdout.write('#')
 		sys.stdout.flush()
+		# Skip image files that are too dark
 		if level < darknessThreshold:
 			logging.info(fn + '\tToo dark' + '\tLevel: ' + str(level))
 			continue
 
-		# create symbolic links
+		# create symbolic links so ffmpeg command will have sequential numeric filenames
 		createLinks(imageFilePath, tmpDir, filecount)
 		logging.info(fn + '\timg' + str(filecount).zfill(5) + '\tLevel: ' + str(level))
 
@@ -67,8 +68,9 @@ def main():
 
 	# Remove temporary links and directory
 	print('####Cleaning up')
-	cleanUpLinks(tmpDir)
+	cleanUp(tmpDir)
 
+	# Log final information
 	endtime = datetime.datetime.now()
 	elapsed = endtime - now
 	logging.info('Ending operation: ' + datetime.datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
@@ -93,7 +95,7 @@ def testBrightness( img_file ):
 	return stat.rms[0]
 
 # Erase symbolic links and temporary directory
-def cleanUpLinks(tempdirectory):
+def cleanUp(tempdirectory):
 	# unlink the symbolic links
 	for link in os.listdir(tempdirectory):
 		os.unlink(tempdirectory + link)
