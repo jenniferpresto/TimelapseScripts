@@ -5,8 +5,8 @@ import sys
 import getopt
 
 def main():
-	imageDir = '/Users/sandlappernyc/Desktop/testpics'
-	
+	imageDir = '/Users/SandlapperNYC/Desktop/timelapse'
+
 	# Because these will be inputs, start with string
 	startDateInput = ''
 	endDateInput = ''
@@ -25,7 +25,10 @@ def main():
 		elif o == '-e':
 			endDateInput = a
 		elif o == '-h':
+			print '###########'
 			print 'Use format: countFiles.py -s <startdate YYYY-MM-DD> -e <enddate YYYY-MM-DD>'
+			print '###########'
+			sys.exit(2)
 
 	# Make sure dates in correct format
 	print 'Validating dateString:'
@@ -58,17 +61,21 @@ def main():
 
 		# Extract file name before underscore
 		fnbegin = fn.split('_')[0]
-		
+
 		# Check to see if in the dictonary
 		# If so, add to count
 		if fnbegin in dateCountPairs.keys():
 			dateCountPairs[fnbegin] += 1
 		# Otherwise, skip it and print warning
-		else:
-			print 'Found file in different format or outside range:', fn
+		# else:
+		# 	print 'Found file in different format or outside range:', fn
 
 	for eachDate in dateCountPairs:
-		print eachDate, ': ', dateCountPairs[eachDate]
+		result = eachDate + ': ' + str(dateCountPairs[eachDate])
+		if dateCountPairs[eachDate] == 72:
+			print result
+		else:
+			printInRed(result)
 
 ##################################
 # Validate dates
@@ -83,6 +90,14 @@ def validateDateString(dateStringToCheck):
 	except ValueError:
 		print 'Incorrect date format:\n\tYou entered',  dateStringToCheck, '\n\tShould be YYYY-MM-DD'
 		return False
+
+##################################
+# Print in bold red
+##################################
+def printInRed(text):
+	start = "\033[1;31m"
+	end = "\033[0;0m"
+	print start + str(text) + end
 
 ##################################
 # Create generator for date range
