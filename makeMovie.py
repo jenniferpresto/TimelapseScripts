@@ -12,7 +12,8 @@ from PIL import ImageStat
 
 def main():
 	logDir = '../timelapseScratch/'
-	imageDir = '../timelapseScratch/imgFiles/'
+	imageDir = '/Users/SandlapperNYC/Desktop/timelapse/'
+	# imageDir = '../timelapseScratch/imgFiles/'
 	tmpDir = '../timelapseScratch/tmpFiles/'
 
 	darknessThreshold = 30.0
