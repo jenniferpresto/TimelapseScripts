@@ -1,30 +1,44 @@
 import os
 import datetime
 import collections
+import sys
+import getopt
 
 def main():
 	imageDir = '/Users/sandlappernyc/Desktop/testpics'
 	
 	# Because these will be inputs, start with string
-	startDate = '2015-08-13'
-	endDate = '2015-09-30'
+	startDateInput = ''
+	endDateInput = ''
 
+	# Get user input for dates
+	try:
+		opts, args = getopt.getopt(sys.argv[1:], 'hs:e:')
+	except getopt.GetoptError as err:
+		print err
+		print 'Use format: countFiles.py -s <startdate YYYY-MM-DD> -e <enddate YYYY-MM-DD>'
+		sys.exit(2)
+
+	for o, a in opts:
+		if o == '-s':
+			startDateInput = a
+		elif o == '-e':
+			endDateInput = a
+		elif o == '-h':
+			print 'Use format: countFiles.py -s <startdate YYYY-MM-DD> -e <enddate YYYY-MM-DD>'
+
+	# Make sure dates in correct format
 	print 'Validating dateString:'
-	startDateCheckOk = validateDateString(startDate)
-	endDateCheckOk = validateDateString(endDate)
+	startDateCheckOk = validateDateString(startDateInput)
+	endDateCheckOk = validateDateString(endDateInput)
 
 	# Parse date strings; stop if either failed
 	if startDateCheckOk == False or endDateCheckOk == False:
 		print 'Stopping script. Please fix dates.'
 		return
 
-	# Include function to correct order of dates
-
-	start = datetime.datetime.strptime(startDate, '%Y-%m-%d')
-	print 'Start date:', start
-
-	end = datetime.datetime.strptime(endDate, '%Y-%m-%d')
-	print 'End date:', end
+	start = datetime.datetime.strptime(startDateInput, '%Y-%m-%d')
+	end = datetime.datetime.strptime(endDateInput, '%Y-%m-%d')
 
 	# create dictionary
 	dateCountPairs = collections.OrderedDict()
@@ -51,7 +65,7 @@ def main():
 			dateCountPairs[fnbegin] += 1
 		# Otherwise, skip it and print warning
 		else:
-			print 'Found file in different format:', fn
+			print 'Found file in different format or outside range:', fn
 
 	for eachDate in dateCountPairs:
 		print eachDate, ': ', dateCountPairs[eachDate]
