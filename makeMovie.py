@@ -78,7 +78,9 @@ def main():
 	logging.info('Elapsed time: ' + str(elapsed))
 	print('####Complete.')
 
+##################################
 # Create symbolic links for the image files that work
+##################################
 def createLinks(filepath, tempdirectory, framenum):
 	# create 5-digit numeric names
 	tmpName = str(framenum).zfill(5)
@@ -88,14 +90,18 @@ def createLinks(filepath, tempdirectory, framenum):
 	dest = tempdirectory + tmpName
 	os.symlink(os.path.abspath(filepath), os.path.abspath(dest))
 
+##################################
 # Test overall brightness of each image
 # http://stackoverflow.com/questions/3490727/what-are-some-methods-to-analyze-image-brightness-using-python
+##################################
 def testBrightness( img_file ):
 	img = Image.open(img_file).convert('L')
 	stat = ImageStat.Stat(img)
 	return stat.rms[0]
 
+##################################
 # Erase symbolic links and temporary directory
+##################################
 def cleanUp(tempdirectory):
 	# unlink the symbolic links
 	for link in os.listdir(tempdirectory):
