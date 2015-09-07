@@ -54,7 +54,7 @@ This runs the job at 11:09 am every day. I also have the Mac scheduled, under **
 
 This script requires SSH keys between the Mac and the Raspberry Pi, so that the Mac doesn't have to enter a password to access the Raspberry Pi. Instructions are available [here](https://www.raspberrypi.org/documentation/remote-access/ssh/passwordless.md).
 
-####Creating movie
+####Creating the movie
 
 **makeMovie.py** creates the movie. It does the following steps:
 
@@ -63,8 +63,29 @@ This script requires SSH keys between the Mac and the Raspberry Pi, so that the 
 * skips files without the .jpg extension
 * skips .jpg files that are too dark
 * for .jpg images with enough light, it creates symbolic links in the temporary directory with sequential numerical names
-* runs an ffmpeg command to create the movie and saves it
+* runs an ffmpeg command to create the movie and save it
 * deletes the symbolic links
 * deletes the temporary directory
 
 ####Cleaning up
+Test the amount of disk space on the Raspberry Pi by sshing in and running ```df -h``` from the command line.
+
+Manually remove files without prompt:
+
+```rm <file> --force```
+
+For example, to remove all photos from September 2015, type
+
+```rm 2015-09-*.jpg --force```
+
+Before removing, check to make sure the files have correctly copied onto the Mac. If you take a picture every 20 minutes, there should be 72 pictures per day.
+
+**countFiles.py** checks all the pictures within a specific data range, and if there aren't 72 pictures, it prints that date in red:
+
+![screenshot](images/countFilesScreenshot.png)
+
+Run the script with the start and end dates using the -s and -e flags:
+
+```python countFiles.py -s 2015-08-20 -e 2015-09-07```
+
+
