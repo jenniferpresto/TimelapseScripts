@@ -17,10 +17,10 @@ def main():
 	print 'Client connected: ', sshClient
 
 	#See if the drive is low on space
-	capacity = getUsePercentage(sshClient)
-	print 'Capacity used on remote drive:', capacity, '%'
+	usePercentage = getUsePercentage(sshClient)
+	print 'Capacity used on remote drive:', usePercentage, '%'
 
-	if (capacity < threshold):
+	if (usePercentage < threshold):
 		print 'The capacity used is not high enough to remove files.'
 		sshClient.close()
 		return
