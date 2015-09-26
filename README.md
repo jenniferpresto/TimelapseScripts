@@ -34,7 +34,7 @@ Set up the cronjob. Open the cron table for editing:
 Add the schedule at the bottom. The schedule below runs the bash script, which takes the picture, every 20 minutes. (See more information [here](https://www.raspberrypi.org/documentation/linux/usage/cron.md)).
 
 ```0,20,40 * * * * /home/pi/camera/simpleCam.sh 2>&1```
- 
+
 ####Cron job on Mac
 **autoDownload.sh** lives on the Mac. It logs into the Raspberry Pi once a day and downloads the prior day's images, based on the date/time naming convention.
 
@@ -80,6 +80,8 @@ For example, to remove all photos from September 2015, type
 
 Before removing, check to make sure the files have correctly copied onto the Mac. If you take a picture every 20 minutes, there should be 72 pictures per day.
 
+Or, run ```cleanRemote.py```. (See below).
+
 **countFiles.py** checks all the pictures within a specific data range, and if there aren't 72 pictures, it prints that date in red:
 
 ![screenshot](images/countFilesScreenshot.png)
@@ -88,4 +90,5 @@ Run the script with the start and end dates using the -s and -e flags:
 
 ```python countFiles.py -s 2015-08-20 -e 2015-09-07```
 
+**cleanRemote.py** goes through images in the Raspberry Pi directory. If they exist on the local drive, it removes them from the Raspberry Pi. Will only run if the capacity used is over 78%.
 

@@ -3,113 +3,67 @@ import datetime
 import collections
 import sys
 import getopt
+import paramiko
 
 def main():
 	localImageDir = '/Users/SandlapperNYC/Desktop/timelapse'
+	remoteImageDir = '/home/pi/camera/simpleCamPics'
 
 	# Because these will be inputs, start with string
 	startDateInput = ''
 	endDateInput = ''
+	threshold = 78
 
-	# Get user input for dates
-	try:
-		opts, args = getopt.getopt(sys.argv[1:], 'hs:e:')
-	except getopt.GetoptError as err:
-		print err
-		print 'Use format: countFiles.py -s <startdate YYYY-MM-DD> -e <enddate YYYY-MM-DD>'
-		sys.exit(2)
+	# establish ssh connection
+	sshClient = paramiko.SSHClient()
+	sshClient.load_system_host_keys()
+	sshClient.connect('10.0.1.11', username='pi')
 
-	for o, a in opts:
-		if o == '-s':
-			startDateInput = a
-		elif o == '-e':
-			endDateInput = a
-		elif o == '-h':
-			print '###########'
-			print 'Use format: countFiles.py -s <startdate YYYY-MM-DD> -e <enddate YYYY-MM-DD>'
-			print '###########'
-			sys.exit(2)
+	print 'Client connected: ', sshClient
 
-	# Make sure dates in correct format
-	print 'Validating dateString:'
-	startDateCheckOk = validateDateString(startDateInput)
-	endDateCheckOk = validateDateString(endDateInput)
 
-	# Parse date strings; stop if either failed
-	if startDateCheckOk == False or endDateCheckOk == False:
-		print 'Stopping script. Please fix dates.'
+	#See if the drive is low on space
+	capacity = getUsePercentage(sshClient)
+	print 'Capacity used on remote drive:', capacity, '%'
+
+	if (capacity < threshold):
+		print 'The capacity used is not high enough to remove files.'
+		sshClient.close()
 		return
 
-	start = datetime.datetime.strptime(startDateInput, '%Y-%m-%d')
-	end = datetime.datetime.strptime(endDateInput, '%Y-%m-%d')
+	sftp = sshClient.open_sftp()
 
-	# create dictionary
-	dateCountPairs = collections.OrderedDict()
-
-	# Add each date string to dictionary with count 0
-	for eachdate in dateRangeGenerator(start, end):
-		datestr = eachdate.strftime('%Y-%m-%d')
-		dateCountPairs[datestr] = 0
-
-	# Loop through the directory
-	print 'Looping through local directory'
-	for fn in os.listdir(localImageDir):
-		# Skip files that aren't jpgs
-		if not fn.endswith('.jpg'):
-			print fn, 'is not a jpg'
-			continue
-
-		# Extract file name before underscore
-		fnbegin = fn.split('_')[0]
-
-		# Check to see if in the dictonary
-		# If so, add to count
-		if fnbegin in dateCountPairs.keys():
-			dateCountPairs[fnbegin] += 1
-		# Otherwise, skip it and print warning
-		# else:
-		# 	print 'Found file in different format or outside range:', fn
-
-	for eachDate in dateCountPairs:
-		result = eachDate + ': ' + str(dateCountPairs[eachDate])
-		if dateCountPairs[eachDate] == 72:
-			print result
+	# Compare remote and local directories
+	localFilenames = os.listdir(localImageDir)
+	remoteFilenames = sftp.listdir(remoteImageDir)
+	for fn in remoteFilenames:
+		if fn in localFilenames:
+			print fn, 'exists locally; removing from remote drive'
+			sftp.remove(remoteImageDir + '/' + fn)
 		else:
-			printInRed(result)
+			print fn, 'does not exist locally. Keeping on remote drive.'
+
+
+	sftp.close()
+	sshClient.close()
+
+
 
 ##################################
-# Validate dates
+# Get percentage of space used
 ##################################
+def getUsePercentage(sshClient):
+	stdin, stdout, stderr = sshClient.exec_command('df -h')
+	capacity = stdout.readlines()
+	percentage = 0;
+	for line in capacity:
+		if line.startswith('rootfs'):
+			information = line.rsplit(' ')
+			for piece in information:
+				if piece.endswith('%'):
+					percentage = int(piece.split('%')[0])
+	return percentage
 
-def validateDateString(dateStringToCheck):
-	try:
-		datetime.datetime.strptime(dateStringToCheck, '%Y-%m-%d')
-		print 'DateOk:', dateStringToCheck
-		return True
-
-	except ValueError:
-		print 'Incorrect date format:\n\tYou entered',  dateStringToCheck, '\n\tShould be YYYY-MM-DD'
-		return False
-
-##################################
-# Print in bold red
-##################################
-def printInRed(text):
-	start = "\033[1;31m"
-	end = "\033[0;0m"
-	print start + str(text) + end
-
-##################################
-# Create generator for date range
-# http://stackoverflow.com/questions/1060279/iterating-through-a-range-of-dates-in-python
-# http://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do-in-python
-##################################
-def dateRangeGenerator(startdate, enddate):
-	for n in range(int ((enddate - startdate).days) + 1):
-		yield startdate + datetime.timedelta(n)
-
-
-# def correctDateOrder(start, end):
 
 if __name__	== "__main__":
 	main()
