@@ -1,17 +1,12 @@
 import os
-import datetime
-import collections
 import sys
-import getopt
 import paramiko
 
 def main():
 	localImageDir = '/Users/SandlapperNYC/Desktop/timelapse'
 	remoteImageDir = '/home/pi/camera/simpleCamPics'
 
-	# Because these will be inputs, start with string
-	startDateInput = ''
-	endDateInput = ''
+	# Percentage of use below which script will not run
 	threshold = 78
 
 	# establish ssh connection
@@ -20,7 +15,6 @@ def main():
 	sshClient.connect('10.0.1.11', username='pi')
 
 	print 'Client connected: ', sshClient
-
 
 	#See if the drive is low on space
 	capacity = getUsePercentage(sshClient)
