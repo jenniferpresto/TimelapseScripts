@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/local/bin/python
 
 import os
 import paramiko
@@ -24,7 +24,7 @@ class dailyDownload():
 		if (capacityUsed > self.threshold):
 			self.eraseFiles()
 		else:
-			print 'Use insufficient to erase files'
+			print 'Still plenty of space; not erasing files at this time'
 
 		self.closeRemote()
 
@@ -55,7 +55,7 @@ class dailyDownload():
 		count = 0
 		for fn in self.remoteFilenames:
 			if not fn in self.localFilenames:
-				print 'getting file', fn, 'from remote'
+				print 'Getting file', fn, 'from remote'
 				self.sftp.get(self.remoteImageDir + '/' + fn, self.localImageDir + '/' + fn)
 				count += 1
 		if count == 0:
