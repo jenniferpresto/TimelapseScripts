@@ -6,7 +6,7 @@ Simplest&mdash;possibly the jenkiest&mdash;timelapse system ever created
 
 Two cron jobs are in operation: One causes the Raspberry Pi to take pictures periodically, currently every 20 minutes. The other runs once a day, causing the Mac to download the prior day's pictures from the Raspberry Pi.
 
-There are three Python scripts, all of which must be run manually. *makeMovie.py* goes through the images, removes the ones that are too dark (since the timelapse also runs through the night), and stitches the rest into a video. *countFiles.py* acts as a check, counting the number of files in a folder per day for a given range of days, making it easier to confirm that all pictures have been downloaded. *cleanRemote.py* checks the files in the image directory on the Raspberry Pi and against the local directory. If they exist locally, it deletes them from the Raspberry Pi.
+There are three Python scripts, all of which must be run manually. *makeMovie.py* goes through the images, removes the ones that are too dark (since the timelapse also runs through the night), and stitches the rest into a video. *countFiles.py* acts as a check, counting the number of files in a folder per day for a given range of days, making it easier to confirm that all pictures have been downloaded. *cleanRemote.py* checks the files in the image directory on the Raspberry Pi against the local directory. If they exist locally, it deletes them from the Raspberry Pi.
 
 ###File list
 
@@ -44,7 +44,7 @@ This also must be exectuable:
 
 The command for editing differs from the Raspberry Pi:
 
-```EDITOR=nano crontab -e```
+```env EDITOR=nano crontab -e```
 
 Set up the Mac cronjob for once a day:
 
