@@ -11,7 +11,7 @@ class dailyDownload():
 
 	localImageDir = '/Users/SandlapperNYC/Desktop/timelapse'
 	remoteImageDir = '/home/pi/camera/simpleCamPics'
-	threshold = 78 # Percentage of use below which script will not run
+	threshold = 78 # Percentage of use below which cleanup method will not run
 
 	def __init__(self):
 		self.logOntoRemote()
@@ -62,6 +62,21 @@ class dailyDownload():
 			print 'No new files to download'
 
 	##################################
+	# Get percentage of space used
+	##################################
+	def getUsePercentage(self):
+		stdin, stdout, stderr = self.sshClient.exec_command('df -h')
+		capacity = stdout.readlines()
+		percentage = 0;
+		for line in capacity:
+			if line.startswith('rootfs'):
+				information = line.rsplit(' ')
+				for piece in information:
+					if piece.endswith('%'):
+						percentage = int(piece.split('%')[0])
+		return percentage
+
+	##################################
 	# Erase files that exist locally
 	##################################
 	def eraseFiles(self):
@@ -78,21 +93,6 @@ class dailyDownload():
 	def closeRemote(self):
 		self.sftp.close()
 		self.sshClient.close()
-
-	##################################
-	# Get percentage of space used
-	##################################
-	def getUsePercentage(self):
-		stdin, stdout, stderr = self.sshClient.exec_command('df -h')
-		capacity = stdout.readlines()
-		percentage = 0;
-		for line in capacity:
-			if line.startswith('rootfs'):
-				information = line.rsplit(' ')
-				for piece in information:
-					if piece.endswith('%'):
-						percentage = int(piece.split('%')[0])
-		return percentage
 
 
 if __name__ == "__main__":
