@@ -60,6 +60,8 @@ class dailyDownload():
 				count += 1
 		if count == 0:
 			print 'No new files to download'
+		else:
+			print 'Downloaded', count, 'files'
 
 	##################################
 	# Get percentage of space used

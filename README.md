@@ -4,22 +4,28 @@ Simplest&mdash;possibly the jenkiest&mdash;timelapse system ever created
 
 ###Quick summary
 
-Two cron jobs are in operation: One causes the Raspberry Pi to take pictures periodically, currently every 20 minutes. The other runs once a day, causing the Mac to download the prior day's pictures from the Raspberry Pi.
+This depends on two main cron jobs: One is a bash script that runs on the Raspberry Pi, causing it to take pictures periodically, currently every 20 minutes. The other is a Python script that runs on the Mac, causing it to download pictures from the Raspberry Pi.
 
-There are three Python scripts, all of which must be run manually. *makeMovie.py* goes through the images, removes the ones that are too dark (since the timelapse also runs through the night), and stitches the rest into a video. *countFiles.py* acts as a check, counting the number of files in a folder per day for a given range of days, making it easier to confirm that all pictures have been downloaded. *cleanRemote.py* checks the files in the image directory on the Raspberry Pi against the local directory. If they exist locally, it deletes them from the Raspberry Pi.
+These scripts are
 
-###File list
+* ```simpleCam.sh```: Takes pictures on Raspberry Pi
+* ```dailyDownload.py```: Downloads the newest images from the Raspberry Pi and deletes images if the Raspberry Pi is too full
 
-* **simpleCam.sh**: Bash script set to run as cron job on Raspberry Pi
-* **autoDownload.sh**: Logs into Raspberry Pi and downloads all pictures taken the prior day.
-* **makeMovie.py**: Stitches still images together to mp4.
-* **countFiles.py**: Counts the number of files per day. If the number is other than 72 (the number when taking a picture every 20 minutes), the output is bold red.
-* **cleanRemote.py**: Deletes files from the Raspberry Pi if they exist locally.
+To make the movie itself, there is a Python script that must be run manually:
 
-###Setup
+* ```makeMovie.py```: Stitches still images into an .mp4 file
+
+
+Other files, mostly obsolete:
+
+* ```autoDownload.sh```: Original bash script for downloading the prior day's photos. No longer used.
+* ```cleanRemote.py```: Deletes files from the Raspberry Pi if they exist locally. This functionality has been folded into ```dailyDownload.py```, so no longer used on its own.
+* ```countFiles.py```: Acts as a check, counting the number of files in a folder per day for a given range of days, making it easier to confirm that all pictures have been downloaded. If the number is other than 72 (the number when taking a picture every 20 minutes), the output is bold red. (Still a nice check).
+
+###Seting up cron jobs
 
 ####Cron job on Raspberry Pi
-**```simpleCam.sh```** lives on the Raspberry Pi. This takes a picture and names it with the date/time format YYYY-MM-DD_HHMM. The Mac cron job and two of the Python scripts require this naming convention.
+**```simpleCam.sh```** lives on the Raspberry Pi. This takes a picture and names it with the date/time format YYYY-MM-DD_HHMM. Some other files in the system require this naming convention.
 
 The script can go where you like: I have it in ```/home/pi/camera```.
 
@@ -31,16 +37,16 @@ Set up the cronjob. Open the cron table for editing:
 
 ```sudo crontab -e ```
 
-Add the schedule at the bottom. The schedule below runs the bash script, which takes the picture, every 20 minutes. (See more information [here](https://www.raspberrypi.org/documentation/linux/usage/cron.md)).
+Add the schedule at the bottom. The schedule below runs the bash script to take a picture every 20 minutes. (See more information [here](https://www.raspberrypi.org/documentation/linux/usage/cron.md)).
 
 ```0,20,40 * * * * /home/pi/camera/simpleCam.sh 2>&1```
 
 ####Cron job on Mac
-**```autoDownload.sh```** lives on the Mac. It logs into the Raspberry Pi once a day and downloads the prior day's images, based on the date/time naming convention.
+**```dailyDownload.py```** lives on the Mac. It is set run once a day. When run, it logs into the Raspberry Pi and downloads any new files in the designated directory. It also checks to see if the Raspberry Pi has gotten too full (currently at over 78% capacity). If so, it deletes files from that directory.
 
 This also must be exectuable:
 
-```chmod +x autoDownload.sh```
+```chmod +x dailyDownload.py```
 
 The command for editing differs from the Raspberry Pi:
 
@@ -48,13 +54,13 @@ The command for editing differs from the Raspberry Pi:
 
 Set up the Mac cronjob for once a day:
 
-```9 11 * * * /Users/SandlapperNYC/Development/RaspberryPi/TimelapseScripts/autoDownload.sh```
+```9 11 * * * /Users/SandlapperNYC/Development/RaspberryPi/TimelapseScripts/dailyDownload.py```
 
 This runs the job at 11:09 am every day. I also have the Mac scheduled, under **System Preferences > Energy Saver > Schedule...**, to come on or wake up every day at 11:00am and shut down at 11:30am.
 
 This script requires SSH keys between the Mac and the Raspberry Pi, so that the Mac doesn't have to enter a password to access the Raspberry Pi. Instructions are available [here](https://www.raspberrypi.org/documentation/remote-access/ssh/passwordless.md).
 
-####Creating the movie
+###Creating the movie
 
 **```makeMovie.py```** creates the movie. It does the following steps:
 
@@ -67,10 +73,14 @@ This script requires SSH keys between the Mac and the Raspberry Pi, so that the 
 * deletes the symbolic links
 * deletes the temporary directory
 
-####Cleaning up
+###Cleaning up
+```dailyDownload.py``` deletes files from the Raspberry Pi if the capacity used is over 78%.
+
+But there are legacy methods of deleting files from the Raspberry Pi to free space.
+
 **```cleanRemote.py```** goes through images in the Raspberry Pi directory. If they exist on the local drive, it removes them from the Raspberry Pi. It will do this only if the capacity used is over 78%.
 
-Before I wrote ```cleanRemote.py```, this is what I did:
+And before I wrote ```cleanRemote.py```, this is what I did:
 
 * Test the amount of disk space on the Raspberry Pi by SSH-ing in and running ```df -h``` from the command line. If space is getting tight, remove the image files (after they've downloaded to the Mac).
 
@@ -85,7 +95,7 @@ Before I wrote ```cleanRemote.py```, this is what I did:
 	```rm 2015-09-*.jpg --force```
 
 
-**```countFiles.py```** checks all the pictures within a specific date range, and if there aren't 72 pictures, it prints that date in red:
+**```countFiles.py```** checks all the pictures within a specific date range, and if there aren't 72 pictures, it prints that date in red. I think it's still a handy check:
 
 ![screenshot](images/countFilesScreenshot.png)
 

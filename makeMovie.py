@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 import sys
 import subprocess
 import logging
@@ -13,7 +15,7 @@ from PIL import ImageStat
 def main():
 	logDir = '../timelapseScratch/'
 	imageDir = '/Users/SandlapperNYC/Desktop/timelapse/'
-	# imageDir = '../timelapseScratch/imgFiles/'
+	#imageDir = '../timelapseScratch/imgFiles/'
 	tmpDir = '../timelapseScratch/tmpFiles/'
 
 	darknessThreshold = 30.0
@@ -22,7 +24,7 @@ def main():
 	dateString = now.strftime("%Y_%m_%d_%H%M")
 	timeString = now.strftime("%Y/%m/%d, %H:%M:%S")
 
-	ffmpegCmd = ['ffmpeg', '-r', '24', '-i', tmpDir + 'img%05d.jpg', '-vf', 'scale=640:480', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', logDir + dateString + 'Movie.mp4']
+	ffmpegCmd = ['ffmpeg', '-r', '24', '-i', tmpDir + 'img%05d.jpg', '-vf', 'scale=1024:768', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', logDir + dateString + 'Movie.mp4']
 
 
 	# set up logging
@@ -30,12 +32,18 @@ def main():
 	logging.basicConfig( filename = logFile, level=logging.DEBUG )
 	print('####Logging file information to ' + logFile)
 	logging.info('Beginning operation: ' + timeString)
+	logging.info('FFMPEG command:')
+	for command in ffmpegCmd:
+		logging.info (command);
 	logging.info('Original filename\tFrame\t\tBrightness')
 	filecount = 0
 
 	# create temporary folder for symbolic links
 	if not os.path.exists(tmpDir):
 		os.makedirs(tmpDir)
+	else:
+		print '####Directory already exists. Aborting.'
+		return
 
 	# run through existing files
 	print('####Analyzing images')
@@ -45,16 +53,22 @@ def main():
 		if not fn.endswith('.jpg'):
 			continue
 
-		imageFilePath = imageDir + fn
-
-		# Test brightness
-		level = testBrightness(imageFilePath)
 		# Print basic progress to console
 		sys.stdout.write('#')
 		sys.stdout.flush()
-		# Skip image files that are too dark
-		if level < darknessThreshold:
-			logging.info(fn + '\tToo dark' + '\tLevel: ' + str(level))
+
+		imageFilePath = imageDir + fn
+
+		# Test brightness
+		level=0
+		try:
+			level = testBrightness(imageFilePath)
+			# Skip image files that are too dark
+			if level < darknessThreshold:
+				logging.info(fn + '\tToo dark' + '\tLevel: ' + str(level))
+				continue
+		except:
+			logging.info(fn + '\tUnable to analyze file')
 			continue
 
 		# create symbolic links so ffmpeg command will have sequential numeric filenames
